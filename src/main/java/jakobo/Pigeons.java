@@ -6,6 +6,7 @@ import com.opencsv.bean.CsvToBeanBuilder;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static java.util.stream.Stream.concat;
@@ -30,6 +31,18 @@ public class Pigeons {
 
     public Stream<String> getPigeonsInCity(String cityId) {
         return pigeonsByCity.get(cityId).stream().distinct();
+    }
+
+    public Map<String,Long> getPigeonsInCityChecklistOccurrence(String cityId) {
+        return pigeonsByCity.get(cityId).stream().collect(Collectors.groupingByConcurrent(name -> name, Collectors.counting()));
+    }
+
+    public Stream<String> getPigeonsInCityOnAtLeastXChecklists(String cityId, int minimumNumberOfChecklists) {
+        return getPigeonsInCityChecklistOccurrence(cityId)
+                .entrySet()
+                .stream()
+                .filter(e -> e.getValue() >= minimumNumberOfChecklists)
+                .map(e -> e.getKey());
     }
 
     public Stream<String> getPigeonsOnChecklist(String checklistId) {
@@ -69,6 +82,15 @@ public class Pigeons {
 
     public static void main(String[] args) {
         final Pigeons pigeons = Pigeons.pigeons();
+
+        System.out.println("Manchester");
+        System.out.println("----------------------");
         pigeons.getPigeonsInCity("1786").forEach(System.out::println);
+
+        System.out.println("----------------------");
+        pigeons.getPigeonsInCityChecklistOccurrence("1786").entrySet().forEach(entry -> System.out.println(entry.getKey() + " on " + entry.getValue() + " checklists."));
+
+        System.out.println("----------------------");
+        pigeons.getPigeonsInCityOnAtLeastXChecklists("1786", 1000).forEach(System.out::println);
     }
 }
