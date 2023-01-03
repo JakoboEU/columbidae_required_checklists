@@ -25,7 +25,7 @@ public class NumberOfChecklists {
 
     public NumberOfChecklistsResultAccumulator findPigeonsInCity(String cityId, String cityName, int numberOfAttempts) {
         final List<String> pigeonsInCity = pigeons.getPigeonsInCity(cityId).collect(Collectors.toList());
-        final NumberOfChecklistsResultAccumulator result = new NumberOfChecklistsResultAccumulator(cityId, cityName, pigeonsInCity.size());
+        final NumberOfChecklistsResultAccumulator result = new NumberOfChecklistsResultAccumulator(cityId, cityName, pigeonsInCity.size(), checklists.getChecklistsInCity(cityId).count());
 
         for (int i = 0; i < numberOfAttempts; i++) {
             result.addResult(findPigeons(pigeonsInCity, checklists.getChecklistsInCity(cityId).collect(shuffledList())));
@@ -56,13 +56,15 @@ public class NumberOfChecklists {
         private final String cityId;
         private final String cityName;
         private final int totalPigeonsInCity;
+        private final long totalChecklistsInCity;
 
         private final List<Integer> numberOfChecklistsRequiredToFindPigeons = new ArrayList<>();
 
-        public NumberOfChecklistsResultAccumulator(String cityId, String cityName, int totalPigeonsInCity) {
+        public NumberOfChecklistsResultAccumulator(String cityId, String cityName, int totalPigeonsInCity, long totalChecklistsInCity) {
             this.cityId = cityId;
             this.cityName = cityName;
             this.totalPigeonsInCity = totalPigeonsInCity;
+            this.totalChecklistsInCity = totalChecklistsInCity;
         }
 
         public NumberOfChecklistsResultAccumulator addResult(int numberOfChecklistsRequired) {
@@ -75,6 +77,7 @@ public class NumberOfChecklists {
                     cityId,
                     cityName,
                     totalPigeonsInCity,
+                    totalChecklistsInCity,
                     numberOfChecklistsRequiredToFindPigeons.size(),
                     numberOfChecklistsRequiredToFindPigeons.stream().mapToInt(i -> i).average().getAsDouble(),
                     numberOfChecklistsRequiredToFindPigeons.stream().mapToInt(i -> i).max().getAsInt(),
@@ -89,6 +92,8 @@ public class NumberOfChecklists {
         private final String cityName;
         @CsvBindByName(column = "total_pigeons_in_city")
         private final int totalPigeonsInCity;
+        @CsvBindByName(column = "total_checklists_in_city")
+        private final long totalChecklistsInCity;
         @CsvBindByName(column = "number_of_attempts")
         private final int numberOfRuns;
         @CsvBindByName(column = "average_number_of_checklists_required")
@@ -98,10 +103,11 @@ public class NumberOfChecklists {
         @CsvBindByName(column = "min_number_of_checklists_required")
         private final int minChecklistsRequired;
 
-        public NumberOfChecklistsResult(String cityId, String cityName, int totalPigeonsInCity, int numberOfRuns, double averageChecklistsRequired, int maxChecklistsRequired, int minChecklistsRequired) {
+        public NumberOfChecklistsResult(String cityId, String cityName, int totalPigeonsInCity, long totalChecklistsInCity, int numberOfRuns, double averageChecklistsRequired, int maxChecklistsRequired, int minChecklistsRequired) {
             this.cityId = cityId;
             this.cityName = cityName;
             this.totalPigeonsInCity = totalPigeonsInCity;
+            this.totalChecklistsInCity = totalChecklistsInCity;
             this.numberOfRuns = numberOfRuns;
             this.averageChecklistsRequired = averageChecklistsRequired;
             this.maxChecklistsRequired = maxChecklistsRequired;
@@ -113,6 +119,7 @@ public class NumberOfChecklists {
             return cityName + " (" + cityId + ")" + ":\n" +
                     "-----------------------------------------\n" +
                     "total pigeons: " + totalPigeonsInCity + "\n" +
+                    "total checklists: " + totalChecklistsInCity + "\n" +
                     "runs: " + numberOfRuns + "\n" +
                     "average checklists required: " + averageChecklistsRequired + "\n" +
                     "max checklists required: " + maxChecklistsRequired + "\n"+
