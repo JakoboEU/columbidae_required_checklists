@@ -1,5 +1,7 @@
 package jakobo;
 
+import com.opencsv.bean.CsvBindByName;
+
 import java.util.*;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
@@ -21,9 +23,9 @@ public class NumberOfChecklists {
         this.checklists = checklists;
     }
 
-    public NumberOfChecklistsResult findPigeonsInCity(String cityId, String cityName, int numberOfAttempts) {
+    public NumberOfChecklistsResultAccumulator findPigeonsInCity(String cityId, String cityName, int numberOfAttempts) {
         final List<String> pigeonsInCity = pigeons.getPigeonsInCity(cityId).collect(Collectors.toList());
-        final NumberOfChecklistsResult result = new NumberOfChecklistsResult(cityId, cityName, pigeonsInCity.size());
+        final NumberOfChecklistsResultAccumulator result = new NumberOfChecklistsResultAccumulator(cityId, cityName, pigeonsInCity.size());
 
         for (int i = 0; i < numberOfAttempts; i++) {
             result.addResult(findPigeons(pigeonsInCity, checklists.getChecklistsInCity(cityId).collect(shuffledList())));
@@ -50,22 +52,60 @@ public class NumberOfChecklists {
         return (Collector<T, ?, List<T>>) SHUFFLED_LIST;
     }
 
-    public static class NumberOfChecklistsResult {
+    public static class NumberOfChecklistsResultAccumulator {
         private final String cityId;
         private final String cityName;
         private final int totalPigeonsInCity;
 
         private final List<Integer> numberOfChecklistsRequiredToFindPigeons = new ArrayList<>();
 
-        public NumberOfChecklistsResult(String cityId, String cityName, int totalPigeonsInCity) {
+        public NumberOfChecklistsResultAccumulator(String cityId, String cityName, int totalPigeonsInCity) {
             this.cityId = cityId;
             this.cityName = cityName;
             this.totalPigeonsInCity = totalPigeonsInCity;
         }
 
-        public NumberOfChecklistsResult addResult(int numberOfChecklistsRequired) {
+        public NumberOfChecklistsResultAccumulator addResult(int numberOfChecklistsRequired) {
             numberOfChecklistsRequiredToFindPigeons.add(numberOfChecklistsRequired);
             return this;
+        }
+
+        public NumberOfChecklistsResult result() {
+            return new NumberOfChecklistsResult(
+                    cityId,
+                    cityName,
+                    totalPigeonsInCity,
+                    numberOfChecklistsRequiredToFindPigeons.size(),
+                    numberOfChecklistsRequiredToFindPigeons.stream().mapToInt(i -> i).average().getAsDouble(),
+                    numberOfChecklistsRequiredToFindPigeons.stream().mapToInt(i -> i).max().getAsInt(),
+                    numberOfChecklistsRequiredToFindPigeons.stream().mapToInt(i -> i).min().getAsInt());
+        }
+    }
+
+    public static class NumberOfChecklistsResult {
+        @CsvBindByName(column = "city_id")
+        private final String cityId;
+        @CsvBindByName(column = "city_name")
+        private final String cityName;
+        @CsvBindByName(column = "total_pigeons_in_city")
+        private final int totalPigeonsInCity;
+        @CsvBindByName(column = "number_of_attempts")
+        private final int numberOfRuns;
+        @CsvBindByName(column = "average_number_of_checklists_required")
+        private final double averageChecklistsRequired;
+        @CsvBindByName(column = "max_number_of_checklists_required")
+        private final int maxChecklistsRequired;
+        @CsvBindByName(column = "min_number_of_checklists_required")
+        private final int minChecklistsRequired;
+
+        public NumberOfChecklistsResult(String cityId, String cityName, int totalPigeonsInCity, int numberOfRuns, double averageChecklistsRequired, int maxChecklistsRequired, int minChecklistsRequired) {
+            this.cityId = cityId;
+            this.cityName = cityName;
+            this.totalPigeonsInCity = totalPigeonsInCity;
+            this.numberOfRuns = numberOfRuns;
+            this.averageChecklistsRequired = averageChecklistsRequired;
+            this.maxChecklistsRequired = maxChecklistsRequired;
+            this.minChecklistsRequired = minChecklistsRequired;
         }
 
         @Override
@@ -73,16 +113,16 @@ public class NumberOfChecklists {
             return cityName + " (" + cityId + ")" + ":\n" +
                     "-----------------------------------------\n" +
                     "total pigeons: " + totalPigeonsInCity + "\n" +
-                    "runs: " + numberOfChecklistsRequiredToFindPigeons.size() + "\n" +
-                    "average checklists required: " + numberOfChecklistsRequiredToFindPigeons.stream().mapToInt(i -> i).average().getAsDouble() + "\n" +
-                    "max checklists required: " + numberOfChecklistsRequiredToFindPigeons.stream().mapToInt(i -> i).max().getAsInt() + "\n"+
-                    "min checklists required: " + numberOfChecklistsRequiredToFindPigeons.stream().mapToInt(i -> i).min().getAsInt() + "\n" +
+                    "runs: " + numberOfRuns + "\n" +
+                    "average checklists required: " + averageChecklistsRequired + "\n" +
+                    "max checklists required: " + maxChecklistsRequired + "\n"+
+                    "min checklists required: " + minChecklistsRequired + "\n" +
                     "-----------------------------------------\n";
         }
     }
 
     public static void main(String[] args) {
         final NumberOfChecklists numberOfChecklists = new NumberOfChecklists(Pigeons.pigeons(), Checklists.checklists());
-        System.out.println(numberOfChecklists.findPigeonsInCity("1786", "Manchester", 5));
+        System.out.println(numberOfChecklists.findPigeonsInCity("1786", "Manchester", 5).result());
     }
 }
