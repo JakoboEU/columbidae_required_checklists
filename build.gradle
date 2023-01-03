@@ -1,0 +1,16 @@
+repositories {
+    maven {
+        url "https://repo.osgeo.org/repository/release/"
+    }
+    maven {
+        url "https://maven.geotoolkit.org/"
+    }
+    mavenCentral()
+}
+
+apply plugin: 'java'
+apply plugin: 'idea'
+
+dependencies {
+}
+
