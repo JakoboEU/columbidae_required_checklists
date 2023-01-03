@@ -29,6 +29,10 @@ public class Checklists {
         return this.cityToChecklists.get(new CityId(cityId)).stream().map(ChecklistRow::getChecklistId);
     }
 
+    public Stream<CityId> getAllCities() {
+        return this.cityToChecklists.keySet().stream();
+    }
+
     private static Stream<ChecklistRow> loadFromFile(final int part) {
         final Reader fileInput = new InputStreamReader(Pigeons.class.getResourceAsStream("/bigquery_export__city_checklists__part" + part + ".csv"));
         return new CsvToBeanBuilder<ChecklistRow>(fileInput)
@@ -49,6 +53,14 @@ public class Checklists {
 
         public CityId(String cityId) {
             this(cityId, null);
+        }
+
+        public String getCityId() {
+            return cityId;
+        }
+
+        public String getCityName() {
+            return cityName;
         }
 
         @Override
