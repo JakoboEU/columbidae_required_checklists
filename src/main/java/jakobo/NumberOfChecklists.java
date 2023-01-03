@@ -23,9 +23,13 @@ public class NumberOfChecklists {
         this.checklists = checklists;
     }
 
-    public NumberOfChecklistsResultAccumulator findPigeonsInCity(String cityId, String cityName, int numberOfAttempts) {
-        final Set<String> pigeonsInCity = pigeons.getPigeonsInCity(cityId).collect(Collectors.toSet());
-        final NumberOfChecklistsResultAccumulator result = new NumberOfChecklistsResultAccumulator(cityId, cityName, pigeonsInCity.size(), checklists.getChecklistsInCity(cityId).count());
+    public NumberOfChecklistsResultAccumulator findPigeonsInCity(String cityId, String cityName, int numberOfAttempts, double pigeonsToAppearOnAtLeastXPercentOfChecklists) {
+        final long totalNumberOfChecklistsInCity = checklists.getChecklistsInCity(cityId).count();
+        final long numberOfChecklistsRequired = (long) (totalNumberOfChecklistsInCity * pigeonsToAppearOnAtLeastXPercentOfChecklists);
+
+        final Set<String> pigeonsInCity = pigeons.getPigeonsInCityOnAtLeastXChecklists(cityId, numberOfChecklistsRequired).collect(Collectors.toSet());
+
+        final NumberOfChecklistsResultAccumulator result = new NumberOfChecklistsResultAccumulator(cityId, cityName, pigeonsInCity.size(), totalNumberOfChecklistsInCity);
 
         for (int i = 0; i < numberOfAttempts; i++) {
             result.addResult(findPigeons(pigeonsInCity, checklists.getChecklistsInCity(cityId).collect(shuffledList())));
@@ -130,6 +134,10 @@ public class NumberOfChecklists {
 
     public static void main(String[] args) {
         final NumberOfChecklists numberOfChecklists = new NumberOfChecklists(Pigeons.pigeons(), Checklists.checklists());
-        System.out.println(numberOfChecklists.findPigeonsInCity("1786", "Manchester", 5).result());
+        System.out.println(numberOfChecklists.findPigeonsInCity("1786", "Manchester", 50, 0.0).result());
+
+        System.out.println(numberOfChecklists.findPigeonsInCity("1786", "Manchester", 50, 0.05).result());
+
+        System.out.println(numberOfChecklists.findPigeonsInCity("1786", "Manchester", 50, 0.1).result());
     }
 }

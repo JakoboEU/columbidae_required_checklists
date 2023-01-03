@@ -37,7 +37,7 @@ public class Pigeons {
         return pigeonsByCity.get(cityId).stream().collect(Collectors.groupingByConcurrent(name -> name, Collectors.counting()));
     }
 
-    public Stream<String> getPigeonsInCityOnAtLeastXChecklists(String cityId, int minimumNumberOfChecklists) {
+    public Stream<String> getPigeonsInCityOnAtLeastXChecklists(String cityId, long minimumNumberOfChecklists) {
         return getPigeonsInCityChecklistOccurrence(cityId)
                 .entrySet()
                 .stream()

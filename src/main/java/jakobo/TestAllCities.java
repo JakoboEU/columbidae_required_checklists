@@ -8,21 +8,35 @@ import com.opencsv.exceptions.CsvRequiredFieldEmptyException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
+import java.util.stream.Stream;
 
 public class TestAllCities {
+
+    private static void writeFile(String filename, Stream<NumberOfChecklists.NumberOfChecklistsResult> results) throws IOException, CsvRequiredFieldEmptyException, CsvDataTypeMismatchException {
+        final Writer writer = new FileWriter(filename);
+        StatefulBeanToCsv beanToCsv = new StatefulBeanToCsvBuilder(writer).build();
+        beanToCsv.write(results);
+        writer.close();
+    }
 
     public static void main(String[] args) throws IOException, CsvRequiredFieldEmptyException, CsvDataTypeMismatchException {
         final Checklists checklists = Checklists.checklists();
         final NumberOfChecklists numberOfChecklists = new NumberOfChecklists(Pigeons.pigeons(), checklists);
         final int numberOfRuns = 100;
 
-        final Writer writer = new FileWriter("number_of_checklists_required_to_find_all_cities__" + numberOfRuns + "_runs.csv");
-        StatefulBeanToCsv beanToCsv = new StatefulBeanToCsvBuilder(writer).build();
-        beanToCsv.write(
+        writeFile("number_of_checklists_required_to_find_all_pigeons__" + numberOfRuns + "_runs.csv",
+            checklists.getAllCities().map(
+                    city -> numberOfChecklists.findPigeonsInCity(city.getCityId(), city.getCityName(), numberOfRuns, 0.0).result()
+            ));
+
+        writeFile("number_of_checklists_required_to_find_pigeons_on_min_5-perc_checklists__" + numberOfRuns + "_runs.csv",
                 checklists.getAllCities().map(
-                        city -> numberOfChecklists.findPigeonsInCity(city.getCityId(), city.getCityName(), numberOfRuns).result()
-                )
-        );
-        writer.close();
+                        city -> numberOfChecklists.findPigeonsInCity(city.getCityId(), city.getCityName(), numberOfRuns, 0.05).result()
+                ));
+
+        writeFile("number_of_checklists_required_to_find_pigeons_on_min_10-perc_checklists__" + numberOfRuns + "_runs.csv",
+                checklists.getAllCities().map(
+                        city -> numberOfChecklists.findPigeonsInCity(city.getCityId(), city.getCityName(), numberOfRuns, 0.1).result()
+                ));
     }
 }
