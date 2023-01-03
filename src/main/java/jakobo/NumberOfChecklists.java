@@ -24,7 +24,7 @@ public class NumberOfChecklists {
     }
 
     public NumberOfChecklistsResultAccumulator findPigeonsInCity(String cityId, String cityName, int numberOfAttempts) {
-        final List<String> pigeonsInCity = pigeons.getPigeonsInCity(cityId).collect(Collectors.toList());
+        final Set<String> pigeonsInCity = pigeons.getPigeonsInCity(cityId).collect(Collectors.toSet());
         final NumberOfChecklistsResultAccumulator result = new NumberOfChecklistsResultAccumulator(cityId, cityName, pigeonsInCity.size(), checklists.getChecklistsInCity(cityId).count());
 
         for (int i = 0; i < numberOfAttempts; i++) {
@@ -34,9 +34,9 @@ public class NumberOfChecklists {
         return result;
     }
 
-    private int findPigeons(List<String> pigeonsToFind, List<String> randomOrderedChecklists) {
+    private int findPigeons(Set<String> pigeonsToFind, List<String> randomOrderedChecklists) {
         int checklistCount = 0;
-        final List<String> remainingPigeons = new ArrayList<>(pigeonsToFind);
+        final Set<String> remainingPigeons = new HashSet<>(pigeonsToFind);
         final ListIterator<String> randomChecklists = randomOrderedChecklists.listIterator();
 
         while(!remainingPigeons.isEmpty()) {

@@ -29,11 +29,11 @@ public class Pigeons {
     }
 
     public Stream<String> getPigeonsInCity(String cityId) {
-        return pigeonsByCity.get(cityId).stream();
+        return pigeonsByCity.get(cityId).stream().distinct();
     }
 
     public Stream<String> getPigeonsOnChecklist(String checklistId) {
-        return Optional.ofNullable(pigeonsByChecklist.get(checklistId)).orElse(Collections.EMPTY_LIST).stream();
+        return Optional.ofNullable(pigeonsByChecklist.get(checklistId)).orElse(Collections.EMPTY_LIST).stream().distinct();
     }
 
     public static Pigeons pigeons() {
@@ -55,9 +55,7 @@ public class Pigeons {
             mapToAppend.put(key, new ArrayList<>());
         }
 
-        if (!mapToAppend.get(key).contains(value)) {
-            mapToAppend.get(key).add(value);
-        }
+        mapToAppend.get(key).add(value);
     }
 
     public static class PigeonRow {
