@@ -22,7 +22,7 @@ public class TestAllCities {
     public static void main(String[] args) throws IOException, CsvRequiredFieldEmptyException, CsvDataTypeMismatchException {
         final Checklists checklists = Checklists.checklists();
         final NumberOfChecklists numberOfChecklists = new NumberOfChecklists(Pigeons.pigeons(), checklists);
-        final int numberOfRuns = 100;
+        final int numberOfRuns = 1000;
 
         writeFile("number_of_checklists_required_to_find_all_pigeons__" + numberOfRuns + "_runs.csv",
             checklists.getAllCities().map(
